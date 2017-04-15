@@ -4,10 +4,10 @@ require_relative './game_board'
 
 # Class for main game functions
 class Game
-  attr_accessor :finished, :victory, :game_board
+  attr_accessor :finished, :victory, :game_board, :error
 
   def initialize
-    @finished, @vicotry = false
+    @finished, @vicotry, @error = false
     system('clear') || system('cls')
     puts 'Welcome to Minesweeper!'
     setup = prompt_game_board
@@ -16,9 +16,13 @@ class Game
 
   def game_instructions
     @game_board.print_board(finished?)
-    puts 'X is left side, Y is top'
-    puts 'Options are; -f (flag), -rf (remove flag)'
-    print 'Enter <x> <y> <option>: '
+    if @error
+      puts 'Invalid input!'
+      @error = false
+    end
+    puts 'Options are: -f (flag), -rf (remove flag), or blank to uncover cell.'
+    # puts 'Enter "q" to quit at any time.'
+    print 'Enter <row> <column> <option>: '
   end
 
   def finished?
@@ -37,7 +41,11 @@ class Game
     x = input[0].to_i
     y = input[1].to_i
     option = input[2]
-    process_move(x, y, option)
+    if @game_board.valid?(x, y)
+      process_move(x, y, option)
+    else
+      @error = true
+    end
   end
 
   def process_move(x, y, option)
@@ -64,27 +72,44 @@ class Game
   def prompt_game_board
     puts 'Create your game area.'
     setup = {}
-    setup[:cols] = prompt_cols
-    setup[:rows] = prompt_rows
-    setup[:mines_num] = prompt_mines_num(setup[:rows], setup[:cols])
+    setup[:cols] = prompt_cols while setup[:cols].nil?
+    setup[:rows] = prompt_rows while setup[:rows].nil?
+    while setup[:mines_num].nil?
+      setup[:mines_num] = prompt_mines_num((setup[:rows] * setup[:cols] - 1))
+    end
     setup
   end
 
-  def prompt_mines_num(rows, cols)
-    puts "Enter the number of mines (1 - #{(rows * cols) - 1})"
-    gets.chomp.to_i
-    # TODO: check validity
+  def prompt_mines_num(max)
+    puts "Enter the number of mines (1 - #{max})"
+    input = gets.chomp.to_i
+    if input <= 0 || input > max
+      puts 'Invalid input.'
+      nil
+    else
+      input
+    end
   end
 
   def prompt_rows
     puts 'Enter height (1 - 20)'
-    gets.chomp.to_i
-    # TODO: check validity
+    input = gets.chomp.to_i
+    if input <= 0 || input > 20
+      puts 'Invalid input.'
+      nil
+    else
+      input
+    end
   end
 
   def prompt_cols
     puts 'Enter width (1 - 20)'
-    gets.chomp.to_i
-    # TODO: check validity
+    input = gets.chomp.to_i
+    if input <= 0 || input > 20
+      puts 'Invalid input.'
+      nil
+    else
+      input
+    end
   end
 end

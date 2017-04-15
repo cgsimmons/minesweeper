@@ -145,4 +145,8 @@ class GameBoard
       tmp_cell.uncover
     end
   end
+
+  def valid?(x, y)
+    x > 0 && x <= @rows && y > 0 && y <= @cols
+  end
 end

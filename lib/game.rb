@@ -10,7 +10,8 @@ class Game
     @finished, @vicotry = false
     system('clear') || system('cls')
     puts 'Welcome to Minesweeper!'
-    @game_board = GameBoard.new
+    setup = prompt_game_board
+    @game_board = GameBoard.new(setup)
   end
 
   def game_instructions
@@ -46,8 +47,8 @@ class Game
     when '-rf'
       @game_board.unflag(x, y)
     else
-      @game_board.uncover(x, y)
       @finished = @game_board.bomb?(x, y)
+      @game_board.propagate(x, y) unless @finished
     end
   end
 
@@ -58,5 +59,32 @@ class Game
     else
       puts 'Nice try.'
     end
+  end
+
+  def prompt_game_board
+    puts 'Create your game area.'
+    setup = {}
+    setup[:cols] = prompt_cols
+    setup[:rows] = prompt_rows
+    setup[:mines_num] = prompt_mines_num(setup[:rows], setup[:cols])
+    setup
+  end
+
+  def prompt_mines_num(rows, cols)
+    puts "Enter the number of mines (1 - #{(rows * cols) - 1})"
+    gets.chomp.to_i
+    # TODO: check validity
+  end
+
+  def prompt_rows
+    puts 'Enter height (1 - 20)'
+    gets.chomp.to_i
+    # TODO: check validity
+  end
+
+  def prompt_cols
+    puts 'Enter width (1 - 20)'
+    gets.chomp.to_i
+    # TODO: check validity
   end
 end

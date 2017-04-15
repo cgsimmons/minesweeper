@@ -95,35 +95,6 @@ class GameBoard
     puts '+'
   end
 
-  def prompt_game_board
-    puts 'Create your game area.'
-    @cols = prompt_cols
-    @rows = prompt_rows
-    @mines_num = prompt_mines_num
-  end
-
-  def prompt_mines_num
-    puts "Enter the number of mines (1 - #{(@rows * @cols) - 1})"
-    gets.chomp.to_i
-    # TODO: check validity
-  end
-
-  def prompt_rows
-    puts 'Enter height (1 - 20)'
-    gets.chomp.to_i
-    # TODO: check validity
-  end
-
-  def prompt_cols
-    puts 'Enter width (1 - 20)'
-    gets.chomp.to_i
-    # TODO: check validity
-  end
-
-  def uncover(x, y)
-    puts @board[x - 1][y - 1].uncover
-  end
-
   def flag(x, y)
     @board[x - 1][y - 1].flag
   end
@@ -134,5 +105,44 @@ class GameBoard
 
   def bomb?(x, y)
     @board[x - 1][y - 1].bomb?
+  end
+
+  def propagate(x, y)
+    tmp_cell = @board[x - 1][y - 1]
+    if tmp_cell.adj_bombs > 0
+      tmp_cell.uncover
+      return
+    end
+    propagate_loop(tmp_cell)
+  end
+
+  def propagate_loop(tmp_cell)
+    queue = [tmp_cell]
+    until queue.empty?
+      cell = queue.pop
+      cell.uncover
+      check_around(cell.position.x, cell.position.y, queue)
+    end
+  end
+
+  def check_around(x, y, queue)
+    ((x - 1)..(x + 1)).each do |row|
+      next if row < 0 || row >= @rows
+      ((y - 1)..(y + 1)).each do |col|
+        check_cell(row, col, queue)
+      end
+    end
+  end
+
+  def check_cell(row, col, queue)
+    return if col < 0 || col >= @cols
+    puts "testing #{row} #{col}"
+    tmp_cell = @board[row][col]
+    return if tmp_cell.uncovered?
+    if tmp_cell.adj_bombs.zero?
+      queue << tmp_cell
+    else
+      tmp_cell.uncover
+    end
   end
 end
